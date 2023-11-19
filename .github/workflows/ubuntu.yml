@@ -1,0 +1,14 @@
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+jobs:
+    helloworld:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: action/checkout@v3 llvm-11-dev clang-11 make
+            - run: sudo apt install -y
+            - run: make
+            - run: ./cloud helloworld.cd -v
