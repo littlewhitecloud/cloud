@@ -16,7 +16,7 @@ noreturn void raise_error(Location location, const char *fmt, ...) {
     exit(1);
 }
 
-noreturn void raise_warning(Location location, const char *fmt, ...) {
+void raise_warning(Location location, const char *fmt, ...) {
     fprintf(stderr, "Warning:\n");
     fprintf(stderr, "\tFile \"%s\", line %d\n", location.filename, location.line);
 
@@ -26,5 +26,4 @@ noreturn void raise_warning(Location location, const char *fmt, ...) {
     va_end(msg);
 
     fprintf(stderr, "\n");
-    exit(1);
 }
