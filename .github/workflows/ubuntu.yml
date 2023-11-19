@@ -8,7 +8,7 @@ jobs:
     helloworld:
         runs-on: ubuntu-latest
         steps:
-            - uses: action/checkout@v3
+            - uses: actions/checkout@v3
             - run: sudo apt install -y llvm-11-dev clang-11 make
             - run: make
             - run: ./cloud helloworld.cd -v
