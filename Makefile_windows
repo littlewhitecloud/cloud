@@ -1,0 +1,16 @@
+LDFLAGS += $(wildcard libs/lib*.a)
+
+ifeq ($(CC),cc)
+	CC := clang
+endif
+
+obj/%.o: src/%.c $(wildcard src/*.h)
+	$(CC) -c $(CFLAGS) $< -o $@
+
+all: cloud.exe
+cloud.exe: $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) -o $@ $(LDFLAGS)
+
+.PHONY: clean
+clean:
+	rm obj cloud.exe
