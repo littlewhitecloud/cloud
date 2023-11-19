@@ -3,9 +3,9 @@
 #include "utils.h"
 #include "compiler.h"
 
-inline bool is_identifier_start(char c) { return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_'; }
+static inline bool is_identifier_start(char c) { return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_'; }
 
-inline bool is_identifier_body(char c) { return is_identifier_start(c) || ('0' <= c && c <= '9'); }
+static inline bool is_identifier_body(char c) { return is_identifier_start(c) || ('0' <= c && c <= '9'); }
 
 static char read_byte(State *st)
 {
@@ -80,7 +80,8 @@ char *read_identifier(struct State *st, char byte)
 {
     List(char) res = {0}; // TODO: improve it
 
-    assert(is_identifier_start(byte));
+    if (!is_identifier_start(byte))
+        raise_error(st->location, "identifier cannot start with '%c'", byte);
     Append(&res, byte);
 
     while (true)
@@ -100,7 +101,7 @@ static Token read_token(State *st)
 {
     Token t = {.location = st->location};
 
-    char c = read_byte(st); // get char
+    char c = read_byte(st);
     switch (c)
     {
     case '\n':
