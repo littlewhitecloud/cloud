@@ -76,24 +76,28 @@ static char read_char_in_string(State *st)
     return c;
 }
 
-char *read_identifier(struct State *st, char byte)
+void read_identifier(State *st, char byte, char (*dest)[100])
 {
-    List(char) res = {0}; // TODO: improve it
+    int len = 0;
 
     if (!is_identifier_start(byte))
         raise_error(st->location, "identifier cannot start with '%c'", byte);
-    Append(&res, byte);
 
-    while (true)
+    memset(*dest, 0, sizeof *dest);
+    (*dest)[len++] = byte;
+
+    while (1)
     {
+        if (len == sizeof *dest - 1) // out of range
+            raise_error(st->location, "name \"%s\" is too long", *dest);
+
         char c = read_byte(st);
         if (!is_identifier_body(c))
         {
             unread_byte(st, c);
-            Append(&res, 0);
-            return res.ptr;
+            return;
         }
-        Append(&res, c);
+        (*dest)[len++] = c;
     }
 }
 
@@ -101,36 +105,46 @@ static Token read_token(State *st)
 {
     Token t = {.location = st->location};
 
-    char c = read_byte(st);
-    switch (c)
-    {
-    case '\n':
-        t.type = TOKEN_NEWLINE;
-        break;
-    case '\0':
-        t.type = TOKEN_EOF;
-        break;
-    case '(':
-        t.type = TOKEN_OPENPAREN;
-        break;
-    case ')':
-        t.type = TOKEN_CLOSEPAREN;
-        break;
-    case '"':
-    case '\'':
-        t.type = TOKEN_INT;
-        t.data.value = read_char_in_string(st);
-        break;
-    default:
-        if (!is_identifier_start(c))
+    while (1) {
+        char c = read_byte(st);
+        switch (c)
         {
-            raise_error(st->location, "unexpected byte '%c' (%#02x)", c, (int)c);
+        case ' ':
+            continue;
+        case '\n':
+            t.type = TOKEN_NEWLINE;
+            break;
+        case '\0':
+            t.type = TOKEN_EOF;
+            break;
+        case '(':
+            t.type = TOKEN_OPENPAREN;
+            break;
+        case ')':
+            t.type = TOKEN_CLOSEPAREN;
+            break;
+        case '-':
+            char n = read_byte(st);
+            if (!(n == '>'))
+                raise_error(st->location, "unexpected byte '%c' after '-'", n);
+            t.type = TOKEN_RETURNTYPE;
+            break;
+        case '"':
+        case '\'':
+            t.type = TOKEN_INT;
+            t.data.value = read_char_in_string(st);
+            break;
+        default:
+            if (!is_identifier_start(c))
+                raise_error(st->location, "unexpected byte '%c' (%#02x)", c, (int)c);
+            t.type = TOKEN_NAME;
+            read_identifier(st, c, &t.data.name);
+            if (!strcmp(t.data.name, "declare"))
+                t.type = TOKEN_DECLARE;
+            break;
         }
-        t.type = TOKEN_NAME;
-        t.data.string = read_identifier(st, c);
-        break;
+        return t;
     }
-    return t;
 }
 
 Token *tokenize(const char *filename)

@@ -31,4 +31,13 @@
 #define End(list) (&(list).ptr[(list).len])
 #define Pop(list) (list)->ptr[assert((list)->len > 0), --(list)->len]
 
+#define sstrcpy(dest, src)                                                                   \
+    do                                                                                        \
+    {                                                                                         \
+        static_assert(sizeof(src) > sizeof(char *), "src must be an array, not a pointer");   \
+        static_assert(sizeof(dest) > sizeof(char *), "dest must be an array, not a pointer"); \
+        static_assert(sizeof(dest) >= sizeof(src), "not enough room in dest");                \
+        strcpy((dest), (src));                                                                \
+    } while (0)
+
 #endif
