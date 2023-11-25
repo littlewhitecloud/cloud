@@ -107,6 +107,7 @@ static Token read_token(State *st)
 
     while (1) {
         char c = read_byte(st);
+        char n;
         switch (c)
         {
         case ' ':
@@ -124,7 +125,7 @@ static Token read_token(State *st)
             t.type = TOKEN_CLOSEPAREN;
             break;
         case '-':
-            char n = read_byte(st);
+            n = read_byte(st);
             if (!(n == '>')) raise_error(st->location, "unexpected byte '%c' after '-'", n);
             t.type = TOKEN_RETURNTYPE;
             break;
