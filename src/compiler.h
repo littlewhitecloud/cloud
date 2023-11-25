@@ -2,6 +2,8 @@
 #define COMPILER_H
 
 #include "llvm-c/Core.h"
+
+#include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>

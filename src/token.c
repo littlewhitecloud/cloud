@@ -125,8 +125,7 @@ static Token read_token(State *st)
             break;
         case '-':
             char n = read_byte(st);
-            if (!(n == '>'))
-                raise_error(st->location, "unexpected byte '%c' after '-'", n);
+            if (!(n == '>')) raise_error(st->location, "unexpected byte '%c' after '-'", n);
             t.type = TOKEN_RETURNTYPE;
             break;
         case '"':
