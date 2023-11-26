@@ -25,14 +25,18 @@ enum TokenType
     TOKEN_RETURNTYPE,
     TOKEN_CLOSEPAREN,
     TOKEN_OPENPAREN,
+    TOKEN_COLON,
 
     // syntaxs
     TOKEN_NEWLINE,
+    TOKEN_INDENT,
+    TOKEN_DEDENT,
     TOKEN_NAME,
     TOKEN_EOF,
 
     // keywords
     TOKEN_DECLARE,
+    TOKEN_RETURN,
 };
 
 enum AstStatementType
@@ -81,6 +85,7 @@ struct Token
     union
     {
         int value;    // TOKEN_INT
+        int indentlevel;
         char name[100]; // TOKEN_NAME
     } data;
 };

@@ -12,23 +12,27 @@ void print_tokens(const Token *tokens) {
         printf("\t");
         switch(tokens->type) {
             #define c(x) case x: printf(#x); break
+            c(TOKEN_EOF);
             c(TOKEN_INT);
+            c(TOKEN_NAME);
+            c(TOKEN_COLON);
+            c(TOKEN_INDENT);
+            c(TOKEN_DEDENT);
+            c(TOKEN_NEWLINE);
+            c(TOKEN_RETURN);
+            c(TOKEN_DECLARE);
             c(TOKEN_OPENPAREN);
             c(TOKEN_CLOSEPAREN);
             c(TOKEN_RETURNTYPE);
-            c(TOKEN_NAME);
-            c(TOKEN_NEWLINE);
-            c(TOKEN_EOF);
-            c(TOKEN_DECLARE);
-            #undef f
+            #undef c
         }
 
-        if (tokens->type == TOKEN_INT) {
+        if (tokens->type == TOKEN_INT)
             printf(" value = %d", tokens->data.value);
-        }
-        if (tokens->type == TOKEN_NAME) {
+        if (tokens->type == TOKEN_NAME)
             printf(" name = %s", tokens->data.name);
-        }
+        if (tokens->type == TOKEN_NEWLINE)
+            printf(" indent level = %d", tokens->data.indentlevel);
         printf("\n");
     } while (tokens++->type != TOKEN_EOF);
 
@@ -43,11 +47,11 @@ void print_asts(const AstStatement *statements)
     do {
         printf("    Line %d: ", statements->location.line);
         switch(statements->type) {
-            #define f(x) case x: printf(#x); break
-            f(AST_STMT_DECLARE);
-            f(AST_STMT_CALL);
-            f(AST_STMT_EOF);
-            #undef f
+            #define c(x) case x: printf(#x); break
+            c(AST_STMT_DECLARE);
+            c(AST_STMT_CALL);
+            c(AST_STMT_EOF);
+            #undef c
         }
 
         switch(statements->type) {
