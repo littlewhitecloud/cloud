@@ -33,3 +33,6 @@ make
 
 ### Goals
 As simple as Python but as fast as CPlusPlus.
+
+#### Thanks to @Akuli, the "jou" programming language really inspired me a lot.
+#### And this project is almost based on the "jou" programming language.
