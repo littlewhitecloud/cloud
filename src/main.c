@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     if (verbose)
         print_tokens(tokens);
 
-    AstStatement *ast = parse(tokens);
+    AstToplevelNode *ast = parse(tokens);
     free(tokens);
 
     if (verbose)
@@ -45,10 +45,11 @@ int main(int argc, char **argv)
     fclose(f);
 
     LLVMDisposeModule(module);
-
+/*
 #ifdef _WIN32
     return system("clang -Wno-override-module -o tmp.exe tmp.bc && tmp.exe");
 #else
     return system("/usr/lib/llvm-11/bin/clang -Wno-override-module -o tmp tmp.bc && .//tmp");
 #endif
+*/
 }

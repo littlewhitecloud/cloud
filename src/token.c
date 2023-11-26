@@ -3,6 +3,11 @@
 #include "utils.h"
 #include "compiler.h"
 
+static const char *const keywords[] = {
+    [TOKEN_DECLARE] = "declare",
+    [TOKEN_RETURN] = "return",
+};
+
 static inline bool is_identifier_start(char c) { return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_'; }
 
 static inline bool is_identifier_body(char c) { return is_identifier_start(c) || ('0' <= c && c <= '9'); }
@@ -163,9 +168,12 @@ static Token read_token(State *st)
                 raise_error(st->location, "unexpected byte '%c' (%#02x)", c, (int)c);
             t.type = TOKEN_NAME;
             read_identifier(st, c, &t.data.name);
-            if (!strcmp(t.data.name, "declare"))
-                t.type = TOKEN_DECLARE;
-            break;
+            for (unsigned type = 0; type < (sizeof keywords) / (sizeof keywords[0]); type++) {
+                if (keywords[type] && !strcmp(t.data.name, keywords[type])) {
+                    t.type = type;
+                    break;
+                }
+            }
         }
         return t;
     }
@@ -201,6 +209,7 @@ struct Token *tokenize(const char *filename)
     do {
         if (t->type == TOKEN_EOF)
         {
+            Append(&tokens, (Token){.location = t->location, .type = TOKEN_NEWLINE, .data.indentlevel = level});
             while (level)
             {
                 Append(&tokens, (Token){.location = tmp->location, .type = TOKEN_DEDENT});

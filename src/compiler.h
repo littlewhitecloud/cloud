@@ -9,12 +9,17 @@
 #include <stdnoreturn.h>
 
 
-typedef struct Location Location;
+
 typedef struct State State;
 typedef struct Token Token;
 typedef struct AstCall AstCall;
-typedef struct AstDeclare AstDeclare;
+typedef struct AstBody AstBody;
+typedef struct Location Location;
 typedef struct AstStatement AstStatement;
+typedef struct AstToplevelNode AstToplevelNode;
+typedef struct AstFunctionDefine AstFunctionDefine;
+typedef struct AstFunctionSignature AstFunctionSignature;
+
 
 enum TokenType
 {
@@ -41,18 +46,15 @@ enum TokenType
 
 enum AstStatementType
 {
-    AST_STMT_DECLARE,
     AST_STMT_CALL,
-    AST_STMT_EOF,
+    AST_STMT_RETURN,
 };
 
-struct AstCall {
-    char funcname[100];
-    int arg;
-};
-
-struct AstDeclare {
-    char funcname[100];
+enum AstToplevelNodeType
+{
+    AST_TOPN_EOF,
+    AST_TOPN_DECLARE,
+    AST_TOPN_DEFINE,
 };
 
 struct Location
@@ -67,16 +69,50 @@ struct State
     FILE *file;
 };
 
+struct AstCall
+{
+    char funcname[100];
+    int arg;
+};
+
+struct AstBody
+{
+    AstStatement *statements;
+    int statments;
+};
+
+struct AstFunctionSignature
+{
+    Location location;
+    char funcname[100];
+    int args;
+};
+
+struct AstFunctionDefine
+{
+    AstFunctionSignature signature;
+    AstBody body;
+};
+
 struct AstStatement
 {
-    enum AstStatementType type;
-    Location location;
+    enum AstStatementType type; // type of the statement
+    Location location; // location of the statement
     union {
-        AstDeclare declare;
-        AstCall call;
+        int retvalue; // AST_STMT_RETURN
+        AstCall call; // AST_STMT_CALL
     } data;
 };
 
+struct AstToplevelNode
+{
+    enum AstToplevelNodeType type;
+    Location location;
+    union {
+        AstFunctionSignature declare_signature;
+        AstFunctionDefine function_define;
+    } data;
+};
 
 struct Token
 {
@@ -93,16 +129,20 @@ struct Token
 // Token
 Token *tokenize(const char *filename);
 
+// Parse
+AstToplevelNode *parse(const Token *tokens);
+
+// Codegen
+LLVMModuleRef codegen(const AstToplevelNode *ast);
+
 // Verbose
 void print_tokens(const Token *tokens);
-void print_asts(const AstStatement *statements);
+void print_asts(const struct AstToplevelNode *topnodelist);
 
 // Error
 noreturn void raise_error(Location location, const char *fmt, ...);
 noreturn void raise_warning(Location location, const char *fmt, ...);
 noreturn void raise_parse_error(const Token *token, const char *expect);
 
-// Codegen
-LLVMModuleRef codegen(const AstStatement *ast);
 
 #endif

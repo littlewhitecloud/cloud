@@ -2,13 +2,13 @@
 #include "compiler.h"
 
 
-LLVMModuleRef codegen(const AstStatement *ast)
+LLVMModuleRef codegen(const AstToplevelNode *ast)
 {
     LLVMModuleRef module = LLVMModuleCreateWithName("module");
     LLVMSetSourceFileName(module, ast->location.filename, strlen(ast->location.filename));
 
     LLVMBuilderRef builder = LLVMCreateBuilder();
-
+    /*
     // TODO: too hard code
     LLVMTypeRef i32type = LLVMInt32TypeInContext(LLVMGetGlobalContext());
     LLVMTypeRef putchar_type = LLVMFunctionType(i32type, &i32type, 1, false);
@@ -28,6 +28,7 @@ LLVMModuleRef codegen(const AstStatement *ast)
     }
 
     LLVMBuildRet(builder, LLVMConstInt(i32type, 0, false));
+    */
     LLVMDisposeBuilder(builder);
     return module;
 }

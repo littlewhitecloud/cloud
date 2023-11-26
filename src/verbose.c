@@ -1,5 +1,17 @@
 #include "compiler.h"
 
+void print_function_signature(const struct AstFunctionSignature *sig, int indent)
+{
+    printf("%*sfunction signature (on line %d): int %s(", indent, "", sig->location.line, sig->funcname);
+    for (int i = 0; i < sig->args; i++)
+    {
+        if (i)
+            printf(", ");
+        printf("int");
+    }
+    printf(")\n");
+}
+
 void print_tokens(const Token *tokens) {
     printf("Tokens of the \"%s\":\n", tokens->location.filename);
 
@@ -40,36 +52,63 @@ void print_tokens(const Token *tokens) {
 }
 
 
-void print_asts(const AstStatement *statements)
+static void print_statement(const AstStatement *stmt, int indent)
 {
-    printf("AST of the \"%s\":\n", statements->location.filename);
+    printf("%*s(line %d) ", indent, "", stmt->location.line);
+    switch(stmt->type) {
+        #define f(x) case x: printf(#x); break
+        f(AST_STMT_CALL);
+        f(AST_STMT_RETURN);
+        #undef f
+    }
+
+    switch(stmt->type) {
+        case AST_STMT_CALL:
+            printf(" funcname=\"%s\" arg=%d\n", stmt->data.call.funcname, stmt->data.call.arg);
+            break;
+        case AST_STMT_RETURN:
+            printf(" returnvalue=%d\n", stmt->data.retvalue);
+            break;
+    }
+}
+
+static void print_body(const struct AstBody *body, int indent)
+{
+    printf("%*sbody:\n", indent, "");
+    for (int i = 0; i < body->statements; i++)
+        print_statement(&body->statements[i], indent + 2);
+}
+
+void print_asts(const struct AstToplevelNode *topnodelist)
+{
+    printf("AST of the \"%s\" ---\n", topnodelist->location.filename);
 
     do {
-        printf("    Line %d: ", statements->location.line);
-        switch(statements->type) {
+        printf("line %d: ", topnodelist->location.line);
+
+        switch(topnodelist->type) {
             #define c(x) case x: printf(#x); break
-            c(AST_STMT_DECLARE);
-            c(AST_STMT_CALL);
-            c(AST_STMT_EOF);
+            c(AST_TOPN_DECLARE);
+            c(AST_TOPN_DEFINE);
+            c(AST_TOPN_EOF);
             #undef c
         }
-
-        switch(statements->type) {
-        case AST_STMT_DECLARE:
-            printf(" funcname=\"%s\"", statements->data.declare.funcname);
-            break;
-        case AST_STMT_CALL:
-            printf(" funcname=\"%s\" arg=%d",
-                statements->data.call.funcname,
-                statements->data.call.arg);
-            break;
-        case AST_STMT_EOF:
-            break;
-        }
-
         printf("\n");
 
-    } while (statements++->type != AST_STMT_EOF);
+        switch(topnodelist->type) {
+            case AST_TOPN_DECLARE:
+                print_function_signature(&topnodelist->data.declare_signature, 2);
+                break;
+            case AST_TOPN_DEFINE:
+                print_function_signature(&topnodelist->data.function_define.signature, 2);
+                print_body(&topnodelist->data.function_define.body, 2);
+                break;
+            case AST_TOPN_EOF:
+                break;
+        }
+        printf("\n");
+
+    } while (topnodelist++->type != AST_TOPN_EOF);
 
     printf("\n");
 }

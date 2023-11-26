@@ -36,11 +36,11 @@ static int parse_expression(const Token **tokens) {
     return (*tokens)++->data.value;
 }
 
-static AstDeclare parse_declare(const Token **tokens) {
+static AstFunctionSignature parse_function_signature(const Token **tokens) {
     // declare funcname(argtype argname, ...) -> rettype
-    AstDeclare res;
+    AstFunctionSignature res = {.location=(*tokens)->location};
 
-    ++*tokens; // declare keyword should be checked
+    // declare keyword already ate
 
     if ((*tokens)->type != TOKEN_NAME)
         raise_parse_error(*tokens, "declare function name");
@@ -49,12 +49,16 @@ static AstDeclare parse_declare(const Token **tokens) {
 
     eat_openparen(tokens);
 
-    parse_type(tokens);
+    while ((*tokens)->type != TOKEN_CLOSEPAREN) {
+        res.args++;
 
-    if ((*tokens)->type != TOKEN_NAME)
-        raise_parse_error(*tokens, "an argument name");
-    ++*tokens;
+        parse_type(tokens); // type of the argument
 
+        if ((*tokens)->type != TOKEN_NAME) // name of the argument
+            raise_parse_error(*tokens, "an argument name");
+        ++*tokens;
+        // break;
+    }
     eat_closeparen(tokens);
 
     if ((*tokens)->type != TOKEN_RETURNTYPE)
@@ -88,32 +92,82 @@ static AstStatement parse_statement(const Token **tokens) {
     AstStatement res = {.location = (*tokens)->location};
 
     switch ((*tokens)->type) {
-        case TOKEN_DECLARE:
-            res.type = AST_STMT_DECLARE;
-            res.data.declare = parse_declare(tokens);
-            break;
-        
         case TOKEN_NAME:
             res.type = AST_STMT_CALL;
             res.data.call = parse_call(tokens);
             break;
-        
+
+        case TOKEN_RETURN:
+            ++*tokens;
+            res.type = AST_STMT_RETURN;
+            res.data.retvalue = parse_expression(tokens);
+            break;
+
         default:
             raise_parse_error(*tokens, "a statement");
     }
 
     eat_newline(tokens);
+    return res;
+}
+
+static AstBody parse_body(const Token **tokens) {
+    /*
+    ...:
+        statement
+    */
+    if ((*tokens)->type != TOKEN_COLON)
+        raise_parse_error(*tokens, "':' followed by a new line with more indentation");
+    ++*tokens;
+
+    if ((*tokens)->type != TOKEN_NEWLINE)
+        raise_parse_error(*tokens, "a new line with more indentation after ':'");
+    ++*tokens;
+
+    if ((*tokens)->type != TOKEN_INDENT)
+        raise_parse_error(*tokens, "more indentation in the newline");
+    ++*tokens;
+
+    List(AstStatement) res = {0};
+    while ((*tokens)->type != TOKEN_DEDENT)
+        Append(&res, parse_statement(tokens));
+    ++*tokens;
+
+    return (AstBody){.statements = res.ptr, .statements = res.len};
+}
+
+static AstToplevelNode parse_toplevel_node(const Token **tokens) {
+    AstToplevelNode res = {.location = (*tokens)->location};
+
+    switch ((*tokens)->type) {
+        case TOKEN_DECLARE:
+            ++*tokens; // eat
+            res.type = AST_TOPN_DECLARE;
+            res.data.declare_signature = parse_function_signature(tokens);
+            eat_newline(tokens);
+            break;
+
+        case TOKEN_EOF:
+            res.type = AST_TOPN_EOF;
+            break;
+        
+        default:
+            res.type = AST_TOPN_DEFINE;
+            res.data.function_define.signature = parse_function_signature(tokens);
+            res.data.function_define.body = parse_body(tokens);
+            break;
+    }
 
     return res;
 }
 
-AstStatement *parse(const Token *tokens) {
-    ++tokens;
+AstToplevelNode *parse(const Token *tokens) {
+    ++tokens; // skip the first newline
 
-    List(AstStatement) res = {0};
+    List(AstToplevelNode) res = {0};
     while (tokens->type != TOKEN_EOF)
-        Append(&res, parse_statement(&tokens));
+        Append(&res, parse_toplevel_node(&tokens));
 
-    Append(&res, (AstStatement){.location = tokens->location, .type = AST_STMT_EOF});
+    Append(&res, (AstToplevelNode){.location = tokens->location, .type = AST_TOPN_EOF});
     return res.ptr;
 }
