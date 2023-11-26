@@ -11,4 +11,4 @@ jobs:
             - uses: actions/checkout@v3
             - run: sudo apt install -y llvm-11-dev clang-11 make
             - run: make
-            - run: ./cloud helloworld.cd -v
+            - run: ./cloud example/helloworld.cd -v
