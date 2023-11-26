@@ -1,5 +1,4 @@
 declare putchar(int c) -> int
-
 putchar("H")
 putchar("e")
 putchar("l")
