@@ -14,11 +14,6 @@ static inline bool is_identifier_body(char c) { return is_identifier_start(c) ||
 
 static char read_byte(State *st)
 {
-    if (st->location.line == 0) {
-        st->location.line++;
-        return '\n';
-    }
-
     int c = fgetc(st->file);
     if (c == EOF)
     { // end of the file
@@ -196,11 +191,6 @@ static Token *get_tokens(const char *filename)
 struct Token *tokenize(const char *filename)
 {
     Token *tmp = get_tokens(filename);
-
-    if (tmp[0].type != TOKEN_NEWLINE)
-        raise_error(tmp->location, "empty file");
-    if (tmp[0].data.indentlevel != 0)
-        raise_warning(tmp->location, "file shouldnot start with indentation");
 
     List(Token) tokens = {0};
     const Token *t = tmp;

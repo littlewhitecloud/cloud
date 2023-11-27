@@ -136,6 +136,7 @@ AstToplevelNode *parse(const Token *tokens);
 LLVMModuleRef codegen(const AstToplevelNode *ast);
 
 // Verbose
+void print_llvmir(char *s);
 void print_tokens(const Token *tokens);
 void print_asts(const struct AstToplevelNode *topnodelist);
 

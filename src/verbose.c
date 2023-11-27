@@ -113,7 +113,7 @@ void print_asts(const struct AstToplevelNode *topnodelist)
     printf("\n");
 }
 
-void free_ast(struct AstStatement *statements)
+void print_llvmir(char *s)
 {
-    free(statements);
+    printf("LLVM IR: \n\n%s", s);
 }

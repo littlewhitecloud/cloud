@@ -162,8 +162,6 @@ static AstToplevelNode parse_toplevel_node(const Token **tokens) {
 }
 
 AstToplevelNode *parse(const Token *tokens) {
-    ++tokens; // skip the first newline
-
     List(AstToplevelNode) res = {0};
     while (tokens->type != TOKEN_EOF)
         Append(&res, parse_toplevel_node(&tokens));
