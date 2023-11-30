@@ -1,6 +1,56 @@
 #include "llvm-c/Types.h"
 #include "compiler.h"
 
+static LLVMValueRef generate_declare(LLVMModuleRef module, const AstFunctionSignature *sig)
+{
+    if (LLVMGetNamedFunction(module, sig->funcname))
+        raise_warning(sig->location, "a function named \"%s\" already declared");
+
+    LLVMTypeRef i32type = LLVMInt32TypeInContext(LLVMGetGlobalContext());
+    LLVMTypeRef *argtype = malloc(sig->args * sizeof(argtype[0]));
+
+    for (int cnt = 0; cnt < sig->args; cnt++)
+        argtype[cnt] = i32type;
+
+    LLVMTypeRef functype = LLVMFunctionType(i32type, argtype, sig->args, false);
+
+    free(argtype);
+
+    return LLVMAddFunction(module, sig->funcname, functype);
+}
+
+static void generate_statement(LLVMBuilderRef builder, LLVMModuleRef module, const AstStatement *stmt)
+{
+    LLVMTypeRef i32type = LLVMInt32TypeInContext(LLVMGetGlobalContext());
+
+    switch (stmt->type)
+    {
+        case AST_STMT_CALL:
+            LLVMValueRef func = LLVMGetNamedFunction(module, stmt->data.call.funcname);
+            if (!func)
+                raise_error(stmt->location, "function named \"%s\" not found", stmt->data.call.funcname);
+
+            LLVMTypeRef functype = LLVMTypeOf(func);
+            LLVMValueRef arg = LLVMConstInt(i32type, stmt->data.call.arg, false);
+
+            LLVMBuildCall2(builder, functype, func, &arg, 1, "putchar");
+
+            break;
+        case AST_STMT_RETURN:
+            LLVMBuildRet(builder, LLVMConstInt(i32type, stmt->data.call.arg, false));
+            break;
+    }
+}
+
+static void generate_define(LLVMBuilderRef builder, LLVMModuleRef module, const AstFunctionDefine *def)
+{
+    LLVMValueRef function = generate_declare(module, &def->signature);
+
+    LLVMBasicBlockRef block = LLVMAppendBasicBlockInContext(LLVMGetGlobalContext(), function, "block");
+    LLVMPositionBuilderAtEnd(builder, block);
+    for (int cnt = 0; cnt < def->body.statements; cnt++)
+        generate_statement(builder, module, &def->body.statements[cnt]);
+}
 
 LLVMModuleRef codegen(const AstToplevelNode *ast)
 {
@@ -8,27 +58,21 @@ LLVMModuleRef codegen(const AstToplevelNode *ast)
     LLVMSetSourceFileName(module, ast->location.filename, strlen(ast->location.filename));
 
     LLVMBuilderRef builder = LLVMCreateBuilder();
-    /*
-    // TODO: too hard code
-    LLVMTypeRef i32type = LLVMInt32TypeInContext(LLVMGetGlobalContext());
-    LLVMTypeRef putchar_type = LLVMFunctionType(i32type, &i32type, 1, false);
-    LLVMValueRef putchar_function = LLVMAddFunction(module, ast->data.declare.funcname, putchar_type);
-    ast++;
 
-    LLVMTypeRef main_type = LLVMFunctionType(i32type, NULL, 0, false);
-    LLVMValueRef main_function = LLVMAddFunction(module, "main", main_type);
-
-    LLVMBasicBlockRef block = LLVMAppendBasicBlockInContext(LLVMGetGlobalContext(), main_function, "block");
-    LLVMPositionBuilderAtEnd(builder, block);
-
-    for (; ast->type != AST_STMT_EOF; ast++)
+    for ( ; ; ast++)
     {
-        LLVMValueRef arg = LLVMConstInt(i32type, ast->data.call.arg, false);
-        LLVMBuildCall2(builder, putchar_type, putchar_function, &arg, 1, "putchar");
-    }
+        switch (ast->type)
+        {
+            case AST_TOPN_DECLARE:
+                generate_declare(module, &ast->data.declare_signature);
+                break;
+            case AST_TOPN_DEFINE:
+                generate_define(builder, module, &ast->data.function_define);
+                break;
 
-    LLVMBuildRet(builder, LLVMConstInt(i32type, 0, false));
-    */
-    LLVMDisposeBuilder(builder);
-    return module;
+            case AST_TOPN_EOF:
+                LLVMDisposeBuilder(builder);
+                break;
+        }
+    }
 }

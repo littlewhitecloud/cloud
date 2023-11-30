@@ -45,12 +45,12 @@ int main(int argc, char **argv)
 
     LLVMDisposeModule(module);
 
-    /*
+
     #ifdef _WIN32
         return system("clang -Wno-override-module -o tmp.exe tmp.bc && tmp.exe");
     #else
         return system("/usr/lib/llvm-11/bin/clang -Wno-override-module -o tmp tmp.bc && .//tmp");
     #endif
-    */
+
 }
 

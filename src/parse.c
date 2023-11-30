@@ -133,7 +133,7 @@ static AstBody parse_body(const Token **tokens) {
         Append(&res, parse_statement(tokens));
     ++*tokens;
 
-    return (AstBody){.statements = res.ptr, .statements = res.len};
+    return (AstBody){.statements = res.ptr, .statments = res.len};
 }
 
 static AstToplevelNode parse_toplevel_node(const Token **tokens) {
@@ -152,6 +152,7 @@ static AstToplevelNode parse_toplevel_node(const Token **tokens) {
             break;
         
         default:
+            ++*tokens;
             res.type = AST_TOPN_DEFINE;
             res.data.function_define.signature = parse_function_signature(tokens);
             res.data.function_define.body = parse_body(tokens);
