@@ -172,5 +172,43 @@ Token *tokenize_without_indent(const char *filename)
     while (tokens.len == 0 || tokens.ptr[tokens.len - 1].type != TOKEN_EOF)
         Append(&tokens, read_token(&st));
     fclose(st.file);
+
+    return tokens.ptr;
+}
+
+Token *tokenize(const char *filename)
+{
+    List(Token) tokens = {0};
+    Token *t = tokenize_without_indent(filename);
+    int level = 0;
+    do 
+    {
+        if (t->type == TOKEN_EOF)
+        {
+            while (level) {
+                Append(&tokens, (Token){.location = t->location, .type = TOKEN_DEDENT});
+                level -= 4;
+            }
+        }
+        Append(&tokens, *t);
+
+        if (t->type == TOKEN_NEWLINE) {
+            if (t->data.indentlevel % 4 != 0)
+                raise_error(t->location, "indentation must be a multiple of 4 spaces");
+
+            Location after = t->location;
+            after.line++;
+            while (level < t->data.indentlevel) {
+                Append(&tokens, (Token){.location = after, .type = TOKEN_INDENT});
+                level += 4;
+            }
+            while (level > t->data.indentlevel) {
+                Append(&tokens, (Token){.location=after, .type=TOKEN_DEDENT});
+                level -= 4;
+            }
+        }
+    } while (t++->type != TOKEN_EOF);
+
+    free(t);
     return tokens.ptr;
 }
