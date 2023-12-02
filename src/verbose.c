@@ -12,6 +12,10 @@ void print_tokens(const Token *tokens) {
         printf("\t");
         switch(tokens->type) {
             #define c(x) case x: printf(#x); break
+            c(TOKEN_COLON);
+            c(TOKEN_INDENT);
+            c(TOKEN_DEDENT);
+            c(TOKEN_RETURN);
             c(TOKEN_INT);
             c(TOKEN_OPENPAREN);
             c(TOKEN_CLOSEPAREN);
@@ -25,9 +29,10 @@ void print_tokens(const Token *tokens) {
 
         if (tokens->type == TOKEN_INT) {
             printf(" value = %d", tokens->data.value);
-        }
-        if (tokens->type == TOKEN_NAME) {
+        } else if (tokens->type == TOKEN_NAME) {
             printf(" name = %s", tokens->data.name);
+        } else if (tokens->type == TOKEN_NEWLINE) {
+            printf(" indent level = %d", tokens->data.indentlevel);
         }
         printf("\n");
     } while (tokens++->type != TOKEN_EOF);

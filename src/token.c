@@ -103,10 +103,7 @@ static void read_indent(State *st, Token *t)
             t->data.indentlevel++;
         else if (c == '\n')
             t->data.indentlevel = 0;
-        else if (c == '\0') {
-            t->type = TOKEN_EOF; // TODO: test it
-            return;
-        } else {
+        else {
             unread_byte(st, c);
             break;
         } 
@@ -162,7 +159,7 @@ static Token read_token(State *st)
     }
 }
 
-Token *tokenize_without_indent(const char *filename)
+static Token *tokenize_without_indent(const char *filename)
 {
     State st = {.location.filename = filename, .file = fopen(filename, "rb")};
     if (!st.file)
@@ -209,6 +206,5 @@ Token *tokenize(const char *filename)
         }
     } while (t++->type != TOKEN_EOF);
 
-    free(t);
     return tokens.ptr;
 }
