@@ -55,18 +55,10 @@ static char read_char_in_string(State *st)
         char n = read_byte(st); // next char
         switch (n)
         { // TODO: add more
-        case 'n':
-            c = '\n';
-            break;
-        case '\\':
-            c = '\\';
-            break;
-        case '\'':
-            c = '\'';
-            break;
-        case '0':
-            c = 0;
-            break;
+        case 'n': c = '\n'; break;
+        case '\\': c = '\\'; break;
+        case '\'': c = '\''; break;
+        case '0': c = 0; break;
         default:
             raise_error(st->location, "unknown escape character: '\\%c'", n);
         }
@@ -76,7 +68,7 @@ static char read_char_in_string(State *st)
     return c;
 }
 
-void read_identifier(State *st, char byte, char (*dest)[100])
+static void read_identifier(State *st, char byte, char (*dest)[100])
 {
     int len = 0;
 
@@ -101,6 +93,26 @@ void read_identifier(State *st, char byte, char (*dest)[100])
     }
 }
 
+static void read_indent(State *st, Token *t)
+{
+    t->type = TOKEN_NEWLINE;
+    while (1)
+    {
+        char c = read_byte(st);
+        if (c == ' ')
+            t->data.indentlevel++;
+        else if (c == '\n')
+            t->data.indentlevel = 0;
+        else if (c == '\0') {
+            t->type = TOKEN_EOF; // TODO: test it
+            return;
+        } else {
+            unread_byte(st, c);
+            break;
+        } 
+    }
+}
+
 static Token read_token(State *st)
 {
     Token t = {.location = st->location};
@@ -113,7 +125,7 @@ static Token read_token(State *st)
         case ' ':
             continue;
         case '\n':
-            t.type = TOKEN_NEWLINE;
+            read_indent(st, &t);
             break;
         case '\0':
             t.type = TOKEN_EOF;
@@ -128,6 +140,9 @@ static Token read_token(State *st)
             n = read_byte(st);
             if (!(n == '>')) raise_error(st->location, "unexpected byte '%c' after '-'", n);
             t.type = TOKEN_RETURNTYPE;
+            break;
+        case ':':
+            t.type = TOKEN_COLON;
             break;
         case '"':
         case '\'':
@@ -147,7 +162,7 @@ static Token read_token(State *st)
     }
 }
 
-Token *tokenize(const char *filename)
+Token *tokenize_without_indent(const char *filename)
 {
     State st = {.location.filename = filename, .file = fopen(filename, "rb")};
     if (!st.file)
@@ -156,6 +171,6 @@ Token *tokenize(const char *filename)
     List(Token) tokens = {0};
     while (tokens.len == 0 || tokens.ptr[tokens.len - 1].type != TOKEN_EOF)
         Append(&tokens, read_token(&st));
-
+    fclose(st.file);
     return tokens.ptr;
 }

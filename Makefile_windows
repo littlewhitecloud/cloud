@@ -1,4 +1,5 @@
 LDFLAGS += $(wildcard libs/lib*.a)
+CFLAGS += -Wno-microsoft-include
 
 ifeq ($(CC),cc)
 	CC := clang
@@ -13,4 +14,4 @@ cloud.exe: $(OBJ)
 
 .PHONY: clean
 clean:
-	rm obj cloud.exe
+	rm obj cloud.exe cloud.ilk cloud.pdb

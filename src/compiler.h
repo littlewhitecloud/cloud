@@ -25,13 +25,17 @@ enum TokenType
     TOKEN_RETURNTYPE,
     TOKEN_CLOSEPAREN,
     TOKEN_OPENPAREN,
+    TOKEN_COLON,
 
     // syntaxs
     TOKEN_NEWLINE,
+    TOKEN_INDENT,
+    TOKEN_DEDENT,
     TOKEN_NAME,
     TOKEN_EOF,
 
     // keywords
+    TOKEN_RETURN,
     TOKEN_DECLARE,
 };
 
@@ -80,13 +84,17 @@ struct Token
     Location location;   // location of the token
     union
     {
-        int value;    // TOKEN_INT
-        char name[100]; // TOKEN_NAME
+        int value;       // TOKEN_INT
+        int indentlevel; // TOKEN_INDENT
+        char name[100];  // TOKEN_NAME
     } data;
 };
 
 // Token
 Token *tokenize(const char *filename);
+
+// Parse
+AstStatement *parse(const Token *tokens);
 
 // Verbose
 void print_tokens(const Token *tokens);
