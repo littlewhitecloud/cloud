@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     if (verbose)
         print_tokens(tokens);
 
-    AstStatement *ast = parse(tokens);
+    AstToplevelNode *ast = parse(tokens);
     free(tokens);
 
     if (verbose)
@@ -35,20 +35,20 @@ int main(int argc, char **argv)
     LLVMModuleRef module = codegen(ast);
     free(ast);
 
-
     char *s = LLVMPrintModuleToString(module);
-
-    printf("LLVM IR:\n\n%s", s);
+    if (verbose)
+        printf("LLVM IR: \n\n%s", s);
 
     FILE *f = fopen("tmp.bc", "wb");
     fprintf(f, "%s", s);
     fclose(f);
 
+    LLVMDisposeMessage(s);
     LLVMDisposeModule(module);
 
-#ifdef _WIN32
-    return system("clang -Wno-override-module -o tmp.exe tmp.bc && tmp.exe");
-#else
-    return system("/usr/lib/llvm-11/bin/clang -Wno-override-module -o tmp tmp.bc && .//tmp");
-#endif
+    #ifdef _WIN32
+        return system("clang -Wno-override-module -o tmp.exe tmp.bc && tmp.exe");
+    #else
+        return system("/usr/lib/llvm-11/bin/clang -Wno-override-module -o tmp tmp.bc && .//tmp");
+    #endif
 }

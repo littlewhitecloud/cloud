@@ -3,17 +3,22 @@
 #include "utils.h"
 #include "compiler.h"
 
+static const char *const keywords[] = {
+    [TOKEN_DECLARE] = "declare",
+    [TOKEN_RETURN] = "return",
+};
+
 static inline bool is_identifier_start(char c) { return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_'; }
 
 static inline bool is_identifier_body(char c) { return is_identifier_start(c) || ('0' <= c && c <= '9'); }
 
 static char read_byte(State *st)
 {
-    if (st->location.line == 0) {
+    if (st->location.line == 0)
+    {
         st->location.line++;
         return '\n';
     }
-
     int c = fgetc(st->file);
     if (c == EOF)
     { // end of the file
@@ -46,7 +51,6 @@ static void unread_byte(State *st, char c)
 
 static char read_char_in_string(State *st)
 {
-    // already ate '
     char c = read_byte(st);
     if (c == '\'')
         raise_warning(st->location, "empty character literral: ''");
@@ -55,16 +59,24 @@ static char read_char_in_string(State *st)
         char n = read_byte(st); // next char
         switch (n)
         { // TODO: add more
-        case 'n': c = '\n'; break;
-        case '\\': c = '\\'; break;
-        case '\'': c = '\''; break;
-        case '0': c = 0; break;
+        case 'n':
+            c = '\n';
+            break;
+        case '\\':
+            c = '\\';
+            break;
+        case '\'':
+            c = '\'';
+            break;
+        case '0':
+            c = 0;
+            break;
         default:
             raise_error(st->location, "unknown escape character: '\\%c'", n);
         }
     }
 
-    read_byte(st); // eat '
+    read_byte(st); // eat
     return c;
 }
 
@@ -95,6 +107,7 @@ static void read_identifier(State *st, char byte, char (*dest)[100])
 
 static void read_indent(State *st, Token *t)
 {
+    // read newline as indent
     t->type = TOKEN_NEWLINE;
     while (1)
     {
@@ -103,10 +116,13 @@ static void read_indent(State *st, Token *t)
             t->data.indentlevel++;
         else if (c == '\n')
             t->data.indentlevel = 0;
-        else {
+        else if (c == '\0') {
+            t->type = TOKEN_EOF;
+            return;
+        } else {
             unread_byte(st, c);
             break;
-        } 
+        }
     }
 }
 
@@ -122,6 +138,7 @@ static Token read_token(State *st)
         case ' ':
             continue;
         case '\n':
+            printf("%s", st->location.line);
             read_indent(st, &t);
             break;
         case '\0':
@@ -151,15 +168,18 @@ static Token read_token(State *st)
                 raise_error(st->location, "unexpected byte '%c' (%#02x)", c, (int)c);
             t.type = TOKEN_NAME;
             read_identifier(st, c, &t.data.name);
-            if (!strcmp(t.data.name, "declare"))
-                t.type = TOKEN_DECLARE;
-            break;
+            for (unsigned type = 0; type < (sizeof keywords) / (sizeof keywords[0]); type++) {
+                if (keywords[type] && !strcmp(t.data.name, keywords[type])) {
+                    t.type = type;
+                    break;
+                }
+            }
         }
         return t;
     }
 }
 
-static Token *tokenize_without_indent(const char *filename)
+static Token *get_tokens(const char *filename)
 {
     State st = {.location.filename = filename, .file = fopen(filename, "rb")};
     if (!st.file)
@@ -173,38 +193,44 @@ static Token *tokenize_without_indent(const char *filename)
     return tokens.ptr;
 }
 
-Token *tokenize(const char *filename)
+struct Token *tokenize(const char *filename)
 {
+    Token *tmp = get_tokens(filename);
+
     List(Token) tokens = {0};
-    Token *t = tokenize_without_indent(filename);
+    const Token *t = tmp;
+
     int level = 0;
-    do 
-    {
+    do {
         if (t->type == TOKEN_EOF)
         {
-            while (level) {
-                Append(&tokens, (Token){.location = t->location, .type = TOKEN_DEDENT});
+            Append(&tokens, (Token){.location = t->location, .type = TOKEN_NEWLINE, .data.indentlevel = level});
+            while (level)
+            {
+                Append(&tokens, (Token){.location = tmp->location, .type = TOKEN_DEDENT});
                 level -= 4;
             }
         }
+
         Append(&tokens, *t);
 
         if (t->type == TOKEN_NEWLINE) {
             if (t->data.indentlevel % 4 != 0)
-                raise_error(t->location, "indentation must be a multiple of 4 spaces");
+                raise_error(t->location, "indent must be a multiple of 4 spaces");
 
             Location after = t->location;
             after.line++;
+
             while (level < t->data.indentlevel) {
                 Append(&tokens, (Token){.location = after, .type = TOKEN_INDENT});
                 level += 4;
             }
             while (level > t->data.indentlevel) {
-                Append(&tokens, (Token){.location=after, .type=TOKEN_DEDENT});
+                Append(&tokens, (Token){.location = after, .type = TOKEN_DEDENT});
                 level -= 4;
             }
         }
     } while (t++->type != TOKEN_EOF);
-
+    free(tmp);
     return tokens.ptr;
 }
