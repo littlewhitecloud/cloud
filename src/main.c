@@ -37,20 +37,18 @@ int main(int argc, char **argv)
 
     char *s = LLVMPrintModuleToString(module);
     if (verbose)
-        print_llvmir(s);
+        printf("LLVM IR: \n\n%s", s);
 
     FILE *f = fopen("tmp.bc", "wb");
     fprintf(f, "%s", s);
     fclose(f);
 
+    LLVMDisposeMessage(s);
     LLVMDisposeModule(module);
-
 
     #ifdef _WIN32
         return system("clang -Wno-override-module -o tmp.exe tmp.bc && tmp.exe");
     #else
         return system("/usr/lib/llvm-11/bin/clang -Wno-override-module -o tmp tmp.bc && .//tmp");
     #endif
-
 }
-

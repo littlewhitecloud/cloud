@@ -81,7 +81,7 @@ static AstCall parse_call(const Token **tokens) {
 
     eat_openparen(tokens);
 
-    res.arg = parse_expression(tokens);
+    res.narg = parse_expression(tokens);
 
     eat_closeparen(tokens);
 
@@ -133,7 +133,7 @@ static AstBody parse_body(const Token **tokens) {
         Append(&res, parse_statement(tokens));
     ++*tokens;
 
-    return (AstBody){.statements = res.ptr, .statments = res.len};
+    return (AstBody){.statements = res.ptr, .nstatements = res.len};
 }
 
 static AstToplevelNode parse_toplevel_node(const Token **tokens) {

@@ -72,13 +72,13 @@ struct State
 struct AstCall
 {
     char funcname[100];
-    int arg;
+    int narg;
 };
 
 struct AstBody
 {
     AstStatement *statements;
-    int statments;
+    int nstatements;
 };
 
 struct AstFunctionSignature

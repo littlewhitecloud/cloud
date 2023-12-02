@@ -1,8 +1,8 @@
 #include "compiler.h"
 
-void print_function_signature(const struct AstFunctionSignature *sig, int indent)
+void print_function_signature(const AstFunctionSignature *sig, int indent)
 {
-    printf("%*sfunction signature (on line %d): int %s(", indent, "", sig->location.line, sig->funcname);
+    printf("%*sfunction signature (line %d): int %s(", indent, "", sig->location.line, sig->funcname);
     for (int i = 0; i < sig->args; i++)
     {
         if (i)
@@ -64,7 +64,7 @@ static void print_statement(const AstStatement *stmt, int indent)
 
     switch(stmt->type) {
         case AST_STMT_CALL:
-            printf(" funcname=\"%s\" arg=%d\n", stmt->data.call.funcname, stmt->data.call.arg);
+            printf(" funcname=\"%s\" arg=%d\n", stmt->data.call.funcname, stmt->data.call.narg);
             break;
         case AST_STMT_RETURN:
             printf(" returnvalue=%d\n", stmt->data.retvalue);
@@ -72,14 +72,14 @@ static void print_statement(const AstStatement *stmt, int indent)
     }
 }
 
-static void print_body(const struct AstBody *body, int indent)
+static void print_body(const AstBody *body, int indent)
 {
     printf("%*sbody:\n", indent, "");
-    for (int i = 0; i < body->statements; i++)
+    for (int i = 0; i < body->nstatements; i++)
         print_statement(&body->statements[i], indent + 2);
 }
 
-void print_asts(const struct AstToplevelNode *topnodelist)
+void print_asts(const AstToplevelNode *topnodelist)
 {
     printf("AST of the \"%s\" ---\n", topnodelist->location.filename);
 

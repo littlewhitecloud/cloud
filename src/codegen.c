@@ -25,19 +25,19 @@ static void generate_statement(LLVMBuilderRef builder, LLVMModuleRef module, con
 
     switch (stmt->type)
     {
-        case AST_STMT_CALL:
+        case AST_STMT_CALL: {
             LLVMValueRef func = LLVMGetNamedFunction(module, stmt->data.call.funcname);
             if (!func)
                 raise_error(stmt->location, "function named \"%s\" not found", stmt->data.call.funcname);
 
             LLVMTypeRef functype = LLVMTypeOf(func);
-            LLVMValueRef arg = LLVMConstInt(i32type, stmt->data.call.arg, false);
+            LLVMValueRef arg = LLVMConstInt(i32type, stmt->data.call.narg, false);
 
             LLVMBuildCall2(builder, functype, func, &arg, 1, "putchar");
-
             break;
+        }
         case AST_STMT_RETURN:
-            LLVMBuildRet(builder, LLVMConstInt(i32type, stmt->data.call.arg, false));
+            LLVMBuildRet(builder, LLVMConstInt(i32type, stmt->data.call.narg, false));
             break;
     }
 }
@@ -48,7 +48,7 @@ static void generate_define(LLVMBuilderRef builder, LLVMModuleRef module, const 
 
     LLVMBasicBlockRef block = LLVMAppendBasicBlockInContext(LLVMGetGlobalContext(), function, "block");
     LLVMPositionBuilderAtEnd(builder, block);
-    for (int cnt = 0; cnt < def->body.statements; cnt++)
+    for (int cnt = 0; cnt < def->body.nstatements; cnt++)
         generate_statement(builder, module, &def->body.statements[cnt]);
 }
 
