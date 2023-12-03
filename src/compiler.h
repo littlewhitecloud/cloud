@@ -136,6 +136,7 @@ AstToplevelNode *parse(const Token *tokens);
 // Verbose
 void print_tokens(const Token *tokens);
 void print_asts(const AstToplevelNode *topnodelist);
+void print_llvmir(LLVMModuleRef module, char *s);
 
 // Error
 noreturn void raise_error(Location location, const char *fmt, ...);

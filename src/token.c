@@ -183,7 +183,7 @@ static Token *tokenize_without_indent(const char *filename)
     return tokens.ptr;
 }
 
-Token *tokenize(const char *filename)
+static Token *tokenize_with_indent(const char *filename)
 {
     List(Token) tokens = {0};
     Token *t = tokenize_without_indent(filename);
@@ -218,4 +218,10 @@ Token *tokenize(const char *filename)
     } while (t++->type != TOKEN_EOF);
 
     return tokens.ptr;
+}
+
+Token *tokenize(const char *filename)
+{
+    Token *tokens = tokenize_with_indent(filename);
+    return tokens;
 }

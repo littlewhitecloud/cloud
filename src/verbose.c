@@ -14,7 +14,7 @@ void print_function_signature(const AstFunctionSignature *sig, int indent)
 
 void print_tokens(const Token *tokens)
 {
-    printf("Tokens of the \"%s\":\n", tokens->location.filename);
+    printf("--- Tokens of the \"%s\" ---\n", tokens->location.filename);
 
     int lastline = -1;
     do
@@ -92,7 +92,7 @@ static void print_body(const AstBody *body, int indent)
 
 void print_asts(const AstToplevelNode *topnodelist)
 {
-    printf("AST of the \"%s\" ---\n", topnodelist->location.filename);
+    printf("--- AST of the \"%s\" ---\n", topnodelist->location.filename);
 
     do
     {
@@ -130,7 +130,11 @@ void print_asts(const AstToplevelNode *topnodelist)
     printf("\n");
 }
 
-void print_llvmir(char *s)
+void print_llvmir(LLVMModuleRef module, char *s)
 {
-    printf("LLVM IR: \n\n%s", s);
+    size_t len;
+    const char *filename = LLVMGetSourceFileName(module, &len);
+    printf("--- LLVM IR of the \"%.*s\" ---\n", (int)len, filename);
+
+    printf("%s", s);
 }
