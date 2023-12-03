@@ -15,4 +15,5 @@ def main() -> int:
     putchar("d")
     putchar("!")
     putchar("\n")
+    return '\0'
 
