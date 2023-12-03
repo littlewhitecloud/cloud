@@ -3,7 +3,7 @@
 void print_function_signature(const AstFunctionSignature *sig, int indent)
 {
     printf("%*sfunction signature (line %d): int %s(", indent, "", sig->location.line, sig->funcname);
-    for (int i = 0; i < sig->args; i++)
+    for (int i = 0; i < sig->nargs; i++)
     {
         if (i)
             printf(", ");
@@ -12,18 +12,25 @@ void print_function_signature(const AstFunctionSignature *sig, int indent)
     printf(")\n");
 }
 
-void print_tokens(const Token *tokens) {
+void print_tokens(const Token *tokens)
+{
     printf("Tokens of the \"%s\":\n", tokens->location.filename);
 
     int lastline = -1;
-    do {
-        if (tokens->location.line != lastline) {
+    do
+    {
+        if (tokens->location.line != lastline)
+        {
             printf("    Line %d:\n", tokens->location.line);
             lastline = tokens->location.line;
         }
         printf("\t");
-        switch(tokens->type) {
-            #define c(x) case x: printf(#x); break
+        switch (tokens->type)
+        {
+#define c(x)        \
+    case x:         \
+        printf(#x); \
+        break
             c(TOKEN_EOF);
             c(TOKEN_INT);
             c(TOKEN_NAME);
@@ -36,14 +43,14 @@ void print_tokens(const Token *tokens) {
             c(TOKEN_OPENPAREN);
             c(TOKEN_CLOSEPAREN);
             c(TOKEN_RETURNTYPE);
-            #undef c
+#undef c
         }
 
         if (tokens->type == TOKEN_INT)
             printf(" value = %d", tokens->data.value);
-        if (tokens->type == TOKEN_NAME)
+        else if (tokens->type == TOKEN_NAME)
             printf(" name = %s", tokens->data.name);
-        if (tokens->type == TOKEN_NEWLINE)
+        else if (tokens->type == TOKEN_NEWLINE)
             printf(" indent level = %d", tokens->data.indentlevel);
         printf("\n");
     } while (tokens++->type != TOKEN_EOF);
@@ -51,24 +58,28 @@ void print_tokens(const Token *tokens) {
     printf("\n");
 }
 
-
 static void print_statement(const AstStatement *stmt, int indent)
 {
     printf("%*s(line %d) ", indent, "", stmt->location.line);
-    switch(stmt->type) {
-        #define f(x) case x: printf(#x); break
+    switch (stmt->type)
+    {
+#define f(x)        \
+    case x:         \
+        printf(#x); \
+        break
         f(AST_STMT_CALL);
         f(AST_STMT_RETURN);
-        #undef f
+#undef f
     }
 
-    switch(stmt->type) {
-        case AST_STMT_CALL:
-            printf(" funcname=\"%s\" arg=%d\n", stmt->data.call.funcname, stmt->data.call.narg);
-            break;
-        case AST_STMT_RETURN:
-            printf(" returnvalue=%d\n", stmt->data.retvalue);
-            break;
+    switch (stmt->type)
+    {
+    case AST_STMT_CALL:
+        printf(" funcname=\"%s\" arg=%d\n", stmt->data.call.funcname, stmt->data.call.arg);
+        break;
+    case AST_STMT_RETURN:
+        printf(" returnvalue=%d\n", stmt->data.returnvalue);
+        break;
     }
 }
 
@@ -83,28 +94,34 @@ void print_asts(const AstToplevelNode *topnodelist)
 {
     printf("AST of the \"%s\" ---\n", topnodelist->location.filename);
 
-    do {
+    do
+    {
         printf("line %d: ", topnodelist->location.line);
 
-        switch(topnodelist->type) {
-            #define c(x) case x: printf(#x); break
+        switch (topnodelist->type)
+        {
+#define c(x)        \
+    case x:         \
+        printf(#x); \
+        break
             c(AST_TOPN_DECLARE);
             c(AST_TOPN_DEFINE);
             c(AST_TOPN_EOF);
-            #undef c
+#undef c
         }
         printf("\n");
 
-        switch(topnodelist->type) {
-            case AST_TOPN_DECLARE:
-                print_function_signature(&topnodelist->data.declare_signature, 2);
-                break;
-            case AST_TOPN_DEFINE:
-                print_function_signature(&topnodelist->data.function_define.signature, 2);
-                print_body(&topnodelist->data.function_define.body, 2);
-                break;
-            case AST_TOPN_EOF:
-                break;
+        switch (topnodelist->type)
+        {
+        case AST_TOPN_DECLARE:
+            print_function_signature(&topnodelist->data.declaresignature, 2);
+            break;
+        case AST_TOPN_DEFINE:
+            print_function_signature(&topnodelist->data.functiondefine.signature, 2);
+            print_body(&topnodelist->data.functiondefine.body, 2);
+            break;
+        case AST_TOPN_EOF:
+            break;
         }
         printf("\n");
 

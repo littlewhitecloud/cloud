@@ -36,29 +36,8 @@ noreturn void raise_parse_error(const Token *token, const char *expect) {
     char res[100];
     switch (token->type)
     {
-    case TOKEN_EOF:
-        strcpy(res, "end of the file");
-        break;
     case TOKEN_INT:
         strcpy(res, "an integer");
-        break;
-    case TOKEN_NAME:
-        snprintf(res, sizeof res, "a variable named %s", token->data.name);
-        break;
-    case TOKEN_COLON:
-        strcpy(res, "':'");
-        break;
-    case TOKEN_INDENT:
-        strcpy(res, "more indentation");
-        break;
-    case TOKEN_DEDENT:
-        strcpy(res, "less indentation");
-        break;
-    case TOKEN_RETURN:
-        strcpy(res, "keyword `return`");
-        break;
-    case TOKEN_DECLARE:
-        strcpy(res, "keyword `declare`");
         break;
     case TOKEN_OPENPAREN:
         strcpy(res, "'('");
@@ -66,7 +45,32 @@ noreturn void raise_parse_error(const Token *token, const char *expect) {
     case TOKEN_CLOSEPAREN:
         strcpy(res, "'('");
         break;
-    default:
+    case TOKEN_COLON:
+        strcpy(res, "':'");
+        break;
+    case TOKEN_NAME:
+        snprintf(res, sizeof res, "a variable named %s", token->data.name);
+        break;
+    case TOKEN_EOF:
+        strcpy(res, "end of the file");
+        break;
+    case TOKEN_INDENT:
+        strcpy(res, "more indentation");
+        break;
+    case TOKEN_DEDENT:
+        strcpy(res, "less indentation");
+        break;
+    case TOKEN_DECLARE:
+        strcpy(res, "keyword `declare`");
+        break;
+    case TOKEN_RETURN:
+        strcpy(res, "keyword `return`");
+        break;
+    case TOKEN_RETURNTYPE:
+        strcpy(res, "`->`");
+        break;
+    case TOKEN_NEWLINE:
+        strcpy(res, "newline");
         break;
     }
     raise_error(token->location, "expected %s got %s", expect, res);
