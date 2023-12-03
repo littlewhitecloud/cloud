@@ -26,15 +26,15 @@ int main(int argc, char **argv)
     if (verbose)
         print_tokens(tokens);
 
-    AstStatement *ast = parse(tokens);
+    AstToplevelNode *ast = parse(tokens);
     free(tokens);
 
     if (verbose)
         print_asts(ast);
 
+
     LLVMModuleRef module = codegen(ast);
     free(ast);
-
 
     char *s = LLVMPrintModuleToString(module);
 
