@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     if (verbose)
         print_asts(ast);
 
-    /*
+
     LLVMModuleRef module = codegen(ast);
     free(ast);
 
@@ -51,6 +51,4 @@ int main(int argc, char **argv)
 #else
     return system("/usr/lib/llvm-11/bin/clang -Wno-override-module -o tmp tmp.bc && .//tmp");
 #endif
-*/
-
 }
