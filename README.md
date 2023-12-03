@@ -4,35 +4,44 @@ This is a toy pogramming language.
 
 ### Example
 `helloworld`
-```cpp
+```python
 declare putchar(int c) -> int
-putchar("H")
-putchar("e")
-putchar("l")
-putchar("l")
-putchar("o")
-putchar(",")
-putchar(" ")
-putchar("W")
-putchar("o")
-putchar("r")
-putchar("l")
-putchar("d")
-putchar("!")
-putchar("\n")
+
+def main() -> int:
+    putchar("H")
+    putchar("e")
+    putchar("l")
+    putchar("l")
+    putchar("o")
+    putchar(",")
+    putchar(" ")
+    putchar("W")
+    putchar("o")
+    putchar("r")
+    putchar("l")
+    putchar("d")
+    putchar("!")
+    putchar("\n")
+    return '\0'
 
 ```
 
 ### Develop
 `linux` & `windows`
+#### You have to install make and LLVM
+
 ```console
+git clone https://github.com/littlewhitecloud/cloud
 mkdir obj
-make
+make -j2
 ./cloud example/helloworld.cd -v
 ```
 
 ### Goals
-As simple as Python but as fast as CPlusPlus.
+- As simple as Python
+- As fast as C++
+- Loose grammar checking
+- More warnings instead of errors
+
 
 #### Thanks to @Akuli, the "jou" programming language really inspired me a lot.
-#### And this project is almost based on the "jou" programming language.
