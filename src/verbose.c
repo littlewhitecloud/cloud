@@ -2,14 +2,14 @@
 
 void print_function_signature(const AstFunctionSignature *sig, int indent)
 {
-    printf("%*sfunction signature (line %d): int %s(", indent, "", sig->location.line, sig->funcname);
+    printf("%*sfunction signature (line %d): %s(", indent, "", sig->location.line, sig->funcname);
     for (int i = 0; i < sig->nargs; i++)
     {
         if (i)
             printf(", ");
         printf("int");
     }
-    printf(")\n");
+    printf(") -> int\n");
 }
 
 void print_tokens(const Token *tokens)
@@ -34,15 +34,16 @@ void print_tokens(const Token *tokens)
             c(TOKEN_EOF);
             c(TOKEN_INT);
             c(TOKEN_NAME);
+            c(TOKEN_ARROW);
             c(TOKEN_COLON);
             c(TOKEN_INDENT);
             c(TOKEN_DEDENT);
-            c(TOKEN_NEWLINE);
             c(TOKEN_RETURN);
+            c(TOKEN_DEFINE);
+            c(TOKEN_NEWLINE);
             c(TOKEN_DECLARE);
             c(TOKEN_OPENPAREN);
             c(TOKEN_CLOSEPAREN);
-            c(TOKEN_RETURNTYPE);
 #undef c
         }
 

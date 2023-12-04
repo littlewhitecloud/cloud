@@ -66,11 +66,14 @@ noreturn void raise_parse_error(const Token *token, const char *expect) {
     case TOKEN_RETURN:
         strcpy(res, "keyword `return`");
         break;
-    case TOKEN_RETURNTYPE:
+    case TOKEN_ARROW:
         strcpy(res, "`->`");
         break;
     case TOKEN_NEWLINE:
         strcpy(res, "newline");
+        break;
+    case TOKEN_DEFINE:
+        strcpy(res, "keyword `def / fn`");
         break;
     }
     raise_error(token->location, "expected %s got %s", expect, res);

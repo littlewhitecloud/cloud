@@ -42,7 +42,7 @@ static AstFunctionSignature parse_signature(const Token **tokens)
     // declare/def/fn funcname(argtype argname, ...) -> rettype
     AstFunctionSignature res = {.location = (*tokens)->location};
 
-    ++*tokens;
+    ++*tokens; // eat keyword
 
     if ((*tokens)->type != TOKEN_NAME)
         raise_parse_error(*tokens, "function name");
@@ -51,23 +51,27 @@ static AstFunctionSignature parse_signature(const Token **tokens)
 
     eat_openparen(tokens);
     while ((*tokens)->type != TOKEN_CLOSEPAREN) {
+        // arg: type
         res.nargs++;
-
-        parse_type(tokens);
 
         if ((*tokens)->type != TOKEN_NAME)
             raise_parse_error(*tokens, "an argument name");
         ++*tokens;
+
+        if ((*tokens)->type != TOKEN_COLON)
+            raise_parse_error(*tokens, "':' and a type after the argument");
+        ++*tokens;
+
+        parse_type(tokens);
 
         break;
     }
 
     eat_closeparen(tokens);
 
-    if ((*tokens)->type != TOKEN_RETURNTYPE)
+    if ((*tokens)->type != TOKEN_ARROW)
         raise_parse_error(*tokens, "a '->' after ')'");
     ++*tokens;
-
     parse_type(tokens); // rettype
 
     return res;
@@ -152,11 +156,14 @@ static AstToplevelNode parse_toplevel_node(const Token **tokens)
             res.type = AST_TOPN_EOF;
             break;
         
-        default:
+        case TOKEN_DEFINE:
             res.type = AST_TOPN_DEFINE;
             res.data.functiondefine.signature = parse_signature(tokens);
             res.data.functiondefine.body = parse_body(tokens);
             break;
+        
+        default:
+            raise_parse_error(*tokens, "keyword `declare` or `def / fn`");
     }
     return res;
 }

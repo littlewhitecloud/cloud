@@ -26,10 +26,10 @@ enum TokenType
     TOKEN_INT,
 
     // operators
-    TOKEN_RETURNTYPE,
     TOKEN_CLOSEPAREN,
     TOKEN_OPENPAREN,
     TOKEN_COLON,
+    TOKEN_ARROW,
 
     // syntaxs
     TOKEN_NEWLINE,
@@ -41,6 +41,7 @@ enum TokenType
     // keywords
     TOKEN_RETURN,
     TOKEN_DECLARE,
+    TOKEN_DEFINE,
 };
 
 enum AstToplevelNodeType
