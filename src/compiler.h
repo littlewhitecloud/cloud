@@ -26,10 +26,10 @@ enum TokenType
     TOKEN_INT,
 
     // operators
-    TOKEN_RETURNTYPE,
     TOKEN_CLOSEPAREN,
     TOKEN_OPENPAREN,
     TOKEN_COLON,
+    TOKEN_ARROW,
 
     // syntaxs
     TOKEN_NEWLINE,
@@ -41,6 +41,7 @@ enum TokenType
     // keywords
     TOKEN_RETURN,
     TOKEN_DECLARE,
+    TOKEN_DEFINE,
 };
 
 enum AstToplevelNodeType
@@ -136,6 +137,7 @@ AstToplevelNode *parse(const Token *tokens);
 // Verbose
 void print_tokens(const Token *tokens);
 void print_asts(const AstToplevelNode *topnodelist);
+void print_llvmir(LLVMModuleRef module, char *s);
 
 // Error
 noreturn void raise_error(Location location, const char *fmt, ...);

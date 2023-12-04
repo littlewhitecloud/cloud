@@ -1,4 +1,4 @@
-CFLAGS += -Wall -Wextra -Wpedantic -Werror=switch -Werror=incompatible-pointer-types -std=c11
+CFLAGS += -Wall -Wextra -Wpedantic -Werror=switch -Werror=incompatible-pointer-types -std=c11 -O3
 CFLAGS += -std=c11
 CFLAGS += -g
 

@@ -4,8 +4,10 @@
 #include "compiler.h"
 
 static const char *const keywords[] = {
-    [TOKEN_DECLARE] = "declare",
+    [TOKEN_DEFINE] = "fn",
+    [TOKEN_DEFINE] = "def",
     [TOKEN_RETURN] = "return",
+    [TOKEN_DECLARE] = "declare",
 };
 
 static inline bool is_identifier_start(char c) { return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_'; }
@@ -119,7 +121,6 @@ static Token read_token(State *st)
 
     while (1) {
         char c = read_byte(st);
-        char n;
         switch (c)
         {
         case ' ':
@@ -137,9 +138,9 @@ static Token read_token(State *st)
             t.type = TOKEN_CLOSEPAREN;
             break;
         case '-':
-            n = read_byte(st);
-            if (!(n == '>')) raise_error(st->location, "unexpected byte '%c' after '-'", n);
-            t.type = TOKEN_RETURNTYPE;
+            if (read_byte(st) != '>')
+                raise_error(st->location, "expected '>' after '-'");
+            t.type = TOKEN_ARROW;
             break;
         case ':':
             t.type = TOKEN_COLON;
@@ -183,7 +184,7 @@ static Token *tokenize_without_indent(const char *filename)
     return tokens.ptr;
 }
 
-Token *tokenize(const char *filename)
+static Token *tokenize_with_indent(const char *filename)
 {
     List(Token) tokens = {0};
     Token *t = tokenize_without_indent(filename);
@@ -218,4 +219,10 @@ Token *tokenize(const char *filename)
     } while (t++->type != TOKEN_EOF);
 
     return tokens.ptr;
+}
+
+Token *tokenize(const char *filename)
+{
+    Token *tokens = tokenize_with_indent(filename);
+    return tokens;
 }

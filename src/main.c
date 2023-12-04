@@ -38,12 +38,13 @@ int main(int argc, char **argv)
 
     char *s = LLVMPrintModuleToString(module);
 
-    printf("LLVM IR:\n\n%s", s);
+    if (verbose)
+        print_llvmir(module, s);
 
     FILE *f = fopen("tmp.bc", "wb");
     fprintf(f, "%s", s);
     fclose(f);
-
+    LLVMDisposeMessage(s);
     LLVMDisposeModule(module);
 
 #ifdef _WIN32
