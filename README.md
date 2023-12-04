@@ -5,7 +5,7 @@ This is a toy pogramming language.
 ### Example
 `helloworld`
 ```python
-declare putchar(int c) -> int
+declare putchar(c: int) -> int
 
 def main() -> int:
     putchar("H")
