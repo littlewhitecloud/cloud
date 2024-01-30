@@ -18,3 +18,12 @@ obj/%.o: src/%.c $(wildcard src/*.h) config.h
 
 cloud: $(SRC:src/%.c=obj/%.o)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+.PHONY: clean
+
+clean:
+	rm -rvf obj cloud test/tmp
+
+.PHONY: test
+test: all
+	test/test.sh
