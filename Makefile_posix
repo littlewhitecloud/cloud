@@ -26,4 +26,4 @@ clean:
 
 .PHONY: test
 test: all
-	test.sh
+	test/test.sh
